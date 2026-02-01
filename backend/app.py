@@ -1,45 +1,78 @@
 import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from services.gemini_service import GeminiService
-from services.package_matcher import find_candidate_packages
+from services.package_matcher import PackageMatcher
+from models import AnalysisResponse
 
 load_dotenv()
 
-app = Flask(__name__)
+app = FastAPI(title="Medical Insurance Intelligence API")
 
-# CORS (as per .md)
-ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:5173"
-).split(",")
+# Production-ready CORS configuration
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 
-CORS(app, resources={
-    r"/api/*": {
-        "origins": ALLOWED_ORIGINS,
-        "methods": ["POST", "GET", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-gemini = GeminiService()
+# Initialize Services
+gemini_service = None
+package_matcher = None
 
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "healthy"}), 200
+@app.on_event("startup")
+async def startup_event():
+    global gemini_service, package_matcher
+    gemini_service = GeminiService()
+    
+    csv_files = [
+        "data/package_list_1.csv",
+        "data/package_list_2.csv"
+    ]
+    # Check if files exist
+    valid_files = [f for f in csv_files if os.path.exists(f)]
+    if not valid_files:
+        print("WARNING: Package CSV files not found!")
+    
+    package_matcher = PackageMatcher(valid_files)
 
-@app.route("/api/analyze", methods=["POST"])
-def analyze():
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for deployment monitoring"""
+    return {"status": "healthy", "service": "MediClaim AI API"}
 
-    file = request.files["file"]
-    content = file.read()
 
-    keywords = gemini.extract_keywords(content)
-    candidates = find_candidate_packages(keywords)
-    analysis = gemini.analyze(content, candidates)
+@app.post("/analyze", response_model=AnalysisResponse)
+async def analyze_discharge_summary(file: UploadFile = File(...)):
+    # Validate file type
+    if file.content_type not in ["application/pdf", "image/jpeg", "image/png"]:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF, JPG, PNG supported.")
+    
+    # Read file content
+    content = await file.read()
+    
+    # Step 1: Extract Keywords using Gemini
+    print("Step 1: Extracting keywords...")
+    keywords = gemini_service.extract_keywords(content, file.content_type)
+    print(f"Keywords: {keywords}")
+    
+    # Step 2: Search for Candidates
+    print("Step 2: Searching Database...")
+    candidates = package_matcher.search(keywords, limit=30)
+    print(f"Found {len(candidates)} candidates")
+    
+    # Step 3: Final Analysis
+    print("Step 3: Reasoning...")
+    result = gemini_service.analyze(content, file.content_type, candidates)
+    
+    return result
 
-    return jsonify(analysis)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
