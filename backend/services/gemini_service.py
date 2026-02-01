@@ -42,38 +42,73 @@ class GeminiService:
         candidates_text = json.dumps(candidates, indent=2)
 
         prompt = f"""
-        You are an expert medical coder and insurance specialist.
-        Your task is to analyze the attached hospital discharge summary and recommend the most appropriate PMJAY/MAA insurance packages.
+        You are an expert medical coder and insurance specialist for PMJAY/MAA schemes.
+        Your task is to analyze the attached hospital discharge summary and recommend appropriate insurance packages.
 
-        Here is a list of POTENTIAL package candidates extracted from the master database based on keyword matching:
+        CRITICAL RULES:
+        1. You MUST ONLY select packages from the CANDIDATE LIST provided below.
+        2. DO NOT invent or hallucinate package names or codes.
+        3. Use EXACT package_code and package_name values from the candidate list.
+        4. If no suitable package exists in the list, set package_code to "NO_MATCH" and explain why.
+
+        ==== CANDIDATE PACKAGE LIST (SELECT ONLY FROM THIS LIST) ====
         {candidates_text}
+        ==== END OF CANDIDATE LIST ====
 
         INSTRUCTIONS:
-        1. Extract all clinical details (diagnoses, procedures, surgery type, etc.) from the image/pdf.
-        2. Review the candidate list provided above.
-        3. Select the ONE most appropriate PRIMARY package.
-        4. Select any justified ADD-ON packages (rules: implied/bundled procedures cannot be add-ons).
-        5. Provide a detailed justification.
+        1. Extract all clinical details (diagnoses, procedures, surgery type, etc.) from the document.
+        2. Review ONLY the candidate packages listed above.
+        3. Select ALL applicable packages - there may be MULTIPLE packages for one case if multiple procedures were performed.
+        4. The primary_package should be the MAIN procedure package.
+        5. Additional applicable packages should go in add_on_packages with proper justification.
+        6. For each package, copy the EXACT package_code and PACKAGE NAME from the candidate list.
 
         Output must be in strict JSON format matching this schema:
         {{
             "clinical_extraction": {{
-                "diagnoses": [], "procedures": [], "complications": [],
-                "surgery_type": "", "anesthesia": "", "admission_type": "", "remarks": ""
+                "diagnoses": [], 
+                "procedures": [], 
+                "complications": [],
+                "surgery_type": "", 
+                "anesthesia": "", 
+                "admission_type": "", 
+                "remarks": ""
             }},
             "normalized_medical_concepts": {{
-                "primary_conditions": [], "definitive_procedures": [], "supporting_procedures": []
+                "primary_conditions": [], 
+                "definitive_procedures": [], 
+                "supporting_procedures": []
             }},
             "package_recommendation": {{
-                "primary_package": {{ "package_code": "", "package_name": "", "reason": "" }},
-                "add_on_packages": [ {{ "package_code": "", "package_name": "", "reason": "" }} ],
-                "rejected_packages": [ {{ "package_code": "", "reason": "" }} ]
+                "primary_package": {{ 
+                    "package_code": "<EXACT CODE FROM LIST>", 
+                    "package_name": "<EXACT NAME FROM LIST>", 
+                    "reason": "<justification>" 
+                }},
+                "add_on_packages": [ 
+                    {{ 
+                        "package_code": "<EXACT CODE FROM LIST>", 
+                        "package_name": "<EXACT NAME FROM LIST>", 
+                        "reason": "<justification>" 
+                    }} 
+                ],
+                "rejected_packages": [ 
+                    {{ 
+                        "package_code": "<code from list>", 
+                        "reason": "<why not applicable>" 
+                    }} 
+                ],
+                "total_applicable_packages": 0
             }},
             "insurance_justification": {{
-                "summary": "", "confidence_score": 0.0,
-                "risk_flags": [], "required_documents": []
+                "summary": "", 
+                "confidence_score": 0.0,
+                "risk_flags": [], 
+                "required_documents": []
             }}
         }}
+
+        IMPORTANT: The package_code and package_name MUST be copied EXACTLY from the candidate list above.
         """
 
         file_part = {"mime_type": mime_type, "data": file_content}

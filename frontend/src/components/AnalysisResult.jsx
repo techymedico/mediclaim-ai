@@ -129,6 +129,53 @@ export default function AnalysisResult({ data }) {
                 </div>
             </div>
 
+            {/* Additional Applicable Packages */}
+            {package_recommendation.add_on_packages && package_recommendation.add_on_packages.length > 0 &&
+                package_recommendation.add_on_packages[0].package_code && (
+                    <div className="card">
+                        <div className="card-header flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Award className="w-5 h-5 text-green-700" />
+                                <div>
+                                    <h3 className="section-title">Additional Applicable Packages</h3>
+                                    <p className="section-subtitle">Other packages that may apply to this case</p>
+                                </div>
+                            </div>
+                            <span className="badge badge-primary">
+                                {package_recommendation.add_on_packages.filter(p => p.package_code).length} packages
+                            </span>
+                        </div>
+                        <div className="card-body">
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Package Code</th>
+                                        <th>Package Name</th>
+                                        <th>Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {package_recommendation.add_on_packages
+                                        .filter(pkg => pkg.package_code)
+                                        .map((pkg, i) => (
+                                            <tr key={i}>
+                                                <td className="text-gray-500">{i + 1}</td>
+                                                <td>
+                                                    <code className="bg-gray-100 px-2 py-1 rounded text-blue-800 font-mono text-xs break-all">
+                                                        {pkg.package_code}
+                                                    </code>
+                                                </td>
+                                                <td className="font-medium">{pkg.package_name}</td>
+                                                <td className="text-sm text-gray-600">{pkg.reason}</td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
             {/* Clinical Extraction Section */}
             <div className="card">
                 <div className="card-header">
