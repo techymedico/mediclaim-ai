@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 from services.gemini_service import GeminiService
 from services.package_matcher import PackageMatcher
-from models import AnalysisResponse
 
 load_dotenv()
 
@@ -48,7 +47,7 @@ async def health_check():
     return {"status": "healthy", "service": "MediClaim AI API"}
 
 
-@app.post("/analyze", response_model=AnalysisResponse)
+@app.post("/analyze")
 async def analyze_discharge_summary(file: UploadFile = File(...)):
     # Validate file type
     if file.content_type not in ["application/pdf", "image/jpeg", "image/png"]:
