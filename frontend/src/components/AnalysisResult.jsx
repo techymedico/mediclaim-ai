@@ -1,398 +1,298 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-    CheckCircle, AlertTriangle, FileText, Activity, Stethoscope,
-    ChevronRight, Shield, Award, TrendingUp, ClipboardCheck,
-    Heart, Sparkles, Download, Share2, Copy, CheckCheck,
-    AlertCircle, Info, ChevronDown, ExternalLink
+    CheckCircle, AlertTriangle, FileText, Activity,
+    Award, ClipboardCheck, AlertCircle, Download, Printer,
+    ChevronRight, Shield
 } from 'lucide-react';
-import { twMerge } from 'tailwind-merge';
 
 export default function AnalysisResult({ data }) {
-    const [animatedConfidence, setAnimatedConfidence] = useState(0);
-    const [copiedCode, setCopiedCode] = useState(false);
-    const [expandedSections, setExpandedSections] = useState({
-        clinical: true,
-        documentation: true
-    });
-
     if (!data) return null;
 
     const { clinical_extraction, package_recommendation, insurance_justification } = data;
     const primary = package_recommendation.primary_package;
     const confidence = (insurance_justification.confidence_score * 100).toFixed(0);
 
-    // Animate confidence score on mount
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            let current = 0;
-            const increment = confidence / 50;
-            const interval = setInterval(() => {
-                current += increment;
-                if (current >= confidence) {
-                    setAnimatedConfidence(confidence);
-                    clearInterval(interval);
-                } else {
-                    setAnimatedConfidence(Math.floor(current));
-                }
-            }, 20);
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [confidence]);
-
-    const copyPackageCode = () => {
-        navigator.clipboard.writeText(primary.package_code);
-        setCopiedCode(true);
-        setTimeout(() => setCopiedCode(false), 2000);
+    const getConfidenceClass = (score) => {
+        if (score >= 80) return 'confidence-high';
+        if (score >= 60) return 'confidence-medium';
+        return 'confidence-low';
     };
 
-    const toggleSection = (section) => {
-        setExpandedSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }));
+    const getConfidenceLabel = (score) => {
+        if (score >= 80) return 'High Confidence';
+        if (score >= 60) return 'Moderate Confidence';
+        return 'Low Confidence - Review Required';
     };
-
-    const getConfidenceColor = (score) => {
-        if (score >= 80) return { ring: 'text-emerald-500', bg: 'bg-emerald-500', label: 'High Confidence', labelBg: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
-        if (score >= 60) return { ring: 'text-amber-500', bg: 'bg-amber-500', label: 'Moderate', labelBg: 'bg-amber-50 text-amber-700 border-amber-100' };
-        return { ring: 'text-red-500', bg: 'bg-red-500', label: 'Review Needed', labelBg: 'bg-red-50 text-red-700 border-red-100' };
-    };
-
-    const confidenceStyle = getConfidenceColor(confidence);
 
     return (
-        <div className="space-y-8 animate-fade-in relative z-10">
-
+        <div className="space-y-6">
             {/* Success Banner */}
-            <div className="glass-card rounded-2xl p-5 border-l-4 border-emerald-500 flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-slide-in-right shadow-lg">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 flex-shrink-0">
-                    <CheckCircle className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-900">Analysis Complete</h3>
-                    <p className="text-sm text-gray-500 mt-1">AI has successfully analyzed your discharge summary and matched it with insurance protocols.</p>
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <button className="flex-1 sm:flex-none glass-button px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:text-primary-600 hover:bg-primary-50 flex items-center justify-center gap-2 transition-all">
-                        <Download className="w-4 h-4" />
-                        Export
-                    </button>
-                    <button className="flex-1 sm:flex-none glass-button px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:text-primary-600 hover:bg-primary-50 flex items-center justify-center gap-2 transition-all">
-                        <Share2 className="w-4 h-4" />
-                        Share
-                    </button>
+            <div className="alert alert-success">
+                <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                    <div>
+                        <p className="font-medium">Analysis Complete</p>
+                        <p className="text-sm mt-0.5 opacity-90">
+                            Document successfully analyzed and matched with insurance packages.
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            {/* Main Recommendation Card */}
-            <div className="glass-card rounded-3xl overflow-hidden relative group">
-                {/* Decorative Background Elements */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-100/60 to-ai-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:translate-x-1/4 transition-transform duration-700" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-accent-100/50 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+            {/* Main Results Grid */}
+            <div className="grid lg:grid-cols-3 gap-6">
 
-                <div className="relative p-6 sm:p-8 md:p-10">
-                    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+                {/* Primary Recommendation - Spans 2 columns */}
+                <div className="lg:col-span-2 card">
+                    <div className="card-header flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Award className="w-5 h-5 text-blue-800" />
+                            <h3 className="section-title">Recommended Package</h3>
+                        </div>
+                        <span className="badge badge-success">
+                            <CheckCircle className="w-3 h-3" />
+                            Best Match
+                        </span>
+                    </div>
+                    <div className="card-body">
+                        <div className="space-y-4">
+                            {/* Package Info Table */}
+                            <table className="data-table">
+                                <tbody>
+                                    <tr>
+                                        <td className="font-medium text-gray-700 w-1/4">Package Name</td>
+                                        <td className="font-semibold text-gray-900">{primary.package_name}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="font-medium text-gray-700">Package Code</td>
+                                        <td>
+                                            <code className="bg-gray-100 px-2 py-1 rounded text-blue-800 font-mono text-sm">
+                                                {primary.package_code}
+                                            </code>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="font-medium text-gray-700">Compliance</td>
+                                        <td>
+                                            <span className="badge badge-primary">
+                                                <Shield className="w-3 h-3" />
+                                                PMJAY Compliant
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                        {/* Left Side - Package Details */}
-                        <div className="flex-1 space-y-6">
-                            {/* Header Badge */}
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                                    <Award className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <span className="badge badge-success">
-                                        <CheckCircle className="w-3 h-3" />
-                                        Recommended Package
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Package Name */}
-                            <div>
-                                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                                    {primary.package_name}
-                                </h2>
-
-                                {/* Package Code with Copy */}
-                                <div className="flex flex-wrap items-center gap-4">
-                                    <button
-                                        onClick={copyPackageCode}
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-mono text-sm transition-all group/copy"
-                                    >
-                                        <span>{primary.package_code}</span>
-                                        {copiedCode ? (
-                                            <CheckCheck className="w-4 h-4 text-emerald-400" />
-                                        ) : (
-                                            <Copy className="w-4 h-4 opacity-50 group-hover/copy:opacity-100" />
-                                        )}
-                                    </button>
-
-                                    <span className="flex items-center gap-2 text-sm text-gray-600 bg-primary-50 px-3 py-2 rounded-lg border border-primary-100">
-                                        <Shield className="w-4 h-4 text-primary-600" />
-                                        PMJAY Compliant
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Reasoning */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-100">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-ai-100 flex items-center justify-center flex-shrink-0">
-                                        <Sparkles className="w-5 h-5 text-ai-600" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900 mb-1">AI Reasoning</h4>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            {primary.reason}
-                                        </p>
-                                    </div>
-                                </div>
+                            {/* AI Reasoning */}
+                            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                                <h4 className="text-sm font-semibold text-blue-800 mb-2">AI Reasoning</h4>
+                                <p className="text-sm text-blue-900">{primary.reason}</p>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        {/* Right Side - Confidence Meter */}
-                        <div className="lg:w-80 flex flex-col items-center justify-center mt-6 lg:mt-0">
-                            <div className="glass-card rounded-3xl p-6 sm:p-8 w-full text-center space-y-5 border border-white/60 shadow-xl">
-                                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Confidence Score</span>
-
-                                {/* Animated Circle */}
-                                <div className="relative w-40 h-40 mx-auto">
-                                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                        {/* Background Circle */}
-                                        <circle
-                                            cx="50" cy="50" r="42"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="8"
-                                            className="text-gray-100"
-                                        />
-                                        {/* Progress Circle */}
-                                        <circle
-                                            cx="50" cy="50" r="42"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="8"
-                                            strokeLinecap="round"
-                                            className={twMerge("transition-all duration-1000 ease-out", confidenceStyle.ring)}
-                                            strokeDasharray={264}
-                                            strokeDashoffset={264 - (264 * animatedConfidence / 100)}
-                                        />
-                                    </svg>
-                                    {/* Center Content */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-5xl font-bold text-gray-900">{animatedConfidence}</span>
-                                        <span className="text-gray-500 text-sm font-medium">percent</span>
-                                    </div>
-                                </div>
-
-                                {/* Confidence Label */}
-                                <span className={twMerge("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border", confidenceStyle.labelBg)}>
-                                    <TrendingUp className="w-4 h-4" />
-                                    {confidenceStyle.label}
+                {/* Confidence Score */}
+                <div className="card">
+                    <div className="card-header">
+                        <h3 className="text-sm font-semibold text-gray-700">Confidence Score</h3>
+                    </div>
+                    <div className="card-body text-center">
+                        <div className="relative inline-block">
+                            <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                                <circle
+                                    cx="50" cy="50" r="42"
+                                    fill="none"
+                                    stroke="#e5e7eb"
+                                    strokeWidth="8"
+                                />
+                                <circle
+                                    cx="50" cy="50" r="42"
+                                    fill="none"
+                                    stroke={confidence >= 80 ? '#059669' : confidence >= 60 ? '#d97706' : '#dc2626'}
+                                    strokeWidth="8"
+                                    strokeLinecap="round"
+                                    strokeDasharray={264}
+                                    strokeDashoffset={264 - (264 * confidence / 100)}
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className={`text-4xl font-bold ${getConfidenceClass(confidence)}`}>
+                                    {confidence}%
                                 </span>
                             </div>
                         </div>
+                        <p className={`text-sm font-medium mt-3 ${getConfidenceClass(confidence)}`}>
+                            {getConfidenceLabel(confidence)}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            {/* Detail Cards Grid */}
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
-
-                {/* Clinical Extraction Card */}
-                <div className="glass-card rounded-2xl overflow-hidden">
-                    {/* Header */}
-                    <button
-                        onClick={() => toggleSection('clinical')}
-                        className="w-full p-6 flex items-center justify-between bg-gradient-to-r from-indigo-50/80 to-transparent hover:from-indigo-100/80 transition-colors"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                                <Stethoscope className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="text-left">
-                                <h3 className="font-bold text-lg text-gray-900">Clinical Extraction</h3>
-                                <p className="text-sm text-gray-500">Diagnoses & Procedures</p>
-                            </div>
-                        </div>
-                        <ChevronDown className={twMerge(
-                            "w-5 h-5 text-gray-400 transition-transform duration-300",
-                            expandedSections.clinical ? "rotate-180" : ""
-                        )} />
-                    </button>
-
-                    {/* Content */}
-                    <div className={twMerge(
-                        "overflow-hidden transition-all duration-500 ease-out",
-                        expandedSections.clinical ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-                    )}>
-                        <div className="p-6 pt-0 space-y-6">
-                            {/* Diagnoses */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Heart className="w-4 h-4 text-rose-500" />
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Diagnoses Identified
-                                    </span>
-                                    <span className="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                        {clinical_extraction.diagnoses.length} found
-                                    </span>
-                                </div>
-                                {clinical_extraction.diagnoses.length > 0 ? (
-                                    <div className="flex flex-wrap gap-2">
-                                        {clinical_extraction.diagnoses.map((d, i) => (
-                                            <span
-                                                key={i}
-                                                className="px-4 py-2 bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-700 text-sm font-medium rounded-xl border border-indigo-100 hover:shadow-md hover:shadow-indigo-500/10 transition-shadow cursor-default"
-                                            >
-                                                {d}
-                                            </span>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2 text-gray-400 text-sm bg-gray-50 p-4 rounded-xl">
-                                        <Info className="w-4 h-4" />
-                                        No specific diagnoses extracted
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Procedures */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Activity className="w-4 h-4 text-indigo-500" />
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Procedures Performed
-                                    </span>
-                                    <span className="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                        {clinical_extraction.procedures.length} found
-                                    </span>
-                                </div>
-                                <div className="space-y-2">
-                                    {clinical_extraction.procedures.map((p, i) => (
-                                        <div
-                                            key={i}
-                                            className="group flex items-start gap-4 p-4 bg-gray-50 hover:bg-white rounded-xl border border-gray-100 hover:border-indigo-100 hover:shadow-md hover:shadow-indigo-500/5 transition-all cursor-default"
-                                        >
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-100 group-hover:bg-indigo-500 flex items-center justify-center transition-colors flex-shrink-0">
-                                                <Activity className="w-4 h-4 text-indigo-600 group-hover:text-white transition-colors" />
-                                            </div>
-                                            <span className="text-sm text-gray-700 leading-relaxed pt-1">{p}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+            {/* Clinical Extraction Section */}
+            <div className="card">
+                <div className="card-header">
+                    <div className="flex items-center gap-3">
+                        <Activity className="w-5 h-5 text-blue-800" />
+                        <div>
+                            <h3 className="section-title">Clinical Extraction</h3>
+                            <p className="section-subtitle">Diagnoses and procedures identified from the document</p>
                         </div>
                     </div>
                 </div>
-
-                {/* Documentation & Risks Card */}
-                <div className="glass-card rounded-2xl overflow-hidden">
-                    {/* Header */}
-                    <button
-                        onClick={() => toggleSection('documentation')}
-                        className="w-full p-6 flex items-center justify-between bg-gradient-to-r from-amber-50/80 to-transparent hover:from-amber-100/80 transition-colors"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
-                                <FileText className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="text-left">
-                                <h3 className="font-bold text-lg text-gray-900">Documentation & Risks</h3>
-                                <p className="text-sm text-gray-500">Required evidence & flags</p>
-                            </div>
-                        </div>
-                        <ChevronDown className={twMerge(
-                            "w-5 h-5 text-gray-400 transition-transform duration-300",
-                            expandedSections.documentation ? "rotate-180" : ""
-                        )} />
-                    </button>
-
-                    {/* Content */}
-                    <div className={twMerge(
-                        "overflow-hidden transition-all duration-500 ease-out",
-                        expandedSections.documentation ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-                    )}>
-                        <div className="p-6 pt-0 space-y-6">
-                            {/* Risk Flags */}
-                            {insurance_justification.risk_flags.length > 0 ? (
-                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-200/50">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <AlertTriangle className="w-5 h-5 text-amber-600" />
-                                        <h4 className="font-bold text-amber-800">Attention Required</h4>
-                                    </div>
-                                    <ul className="space-y-3">
-                                        {insurance_justification.risk_flags.map((flag, i) => (
-                                            <li
-                                                key={i}
-                                                className="flex items-start gap-3 text-sm text-amber-900 bg-white/60 p-3 rounded-xl border border-amber-100"
-                                            >
-                                                <AlertCircle className="w-4 h-4 mt-0.5 text-amber-500 flex-shrink-0" />
-                                                <span>{flag}</span>
-                                            </li>
+                <div className="card-body">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {/* Diagnoses */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                                Diagnoses ({clinical_extraction.diagnoses.length})
+                            </h4>
+                            {clinical_extraction.diagnoses.length > 0 ? (
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Diagnosis</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {clinical_extraction.diagnoses.map((d, i) => (
+                                            <tr key={i}>
+                                                <td className="text-gray-500 w-12">{i + 1}</td>
+                                                <td>{d}</td>
+                                            </tr>
                                         ))}
-                                    </ul>
-                                </div>
+                                    </tbody>
+                                </table>
                             ) : (
-                                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-5 rounded-2xl border border-emerald-200/50 flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                                        <CheckCircle className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-emerald-800">All Clear</h4>
-                                        <p className="text-sm text-emerald-600">No major risk flags detected in documentation</p>
-                                    </div>
-                                </div>
+                                <p className="text-sm text-gray-500 italic">No diagnoses extracted</p>
                             )}
+                        </div>
 
-                            {/* Required Documents */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <ClipboardCheck className="w-4 h-4 text-amber-500" />
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        Required Evidence
-                                    </span>
-                                </div>
-                                <div className="space-y-2">
-                                    {insurance_justification.required_documents.map((doc, i) => (
-                                        <div
-                                            key={i}
-                                            className="group flex items-center gap-4 p-4 bg-gray-50 hover:bg-white rounded-xl border border-gray-100 hover:border-amber-100 hover:shadow-md hover:shadow-amber-500/5 transition-all"
-                                        >
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 group-hover:from-amber-200 group-hover:to-amber-300 flex items-center justify-center text-sm font-bold text-gray-600 group-hover:text-amber-700 transition-colors">
-                                                {i + 1}
-                                            </div>
-                                            <span className="flex-1 text-sm text-gray-700">{doc}</span>
-                                            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
+                        {/* Procedures */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+                                Procedures ({clinical_extraction.procedures.length})
+                            </h4>
+                            {clinical_extraction.procedures.length > 0 ? (
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Procedure</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {clinical_extraction.procedures.map((p, i) => (
+                                            <tr key={i}>
+                                                <td className="text-gray-500 w-12">{i + 1}</td>
+                                                <td>{p}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="text-sm text-gray-500 italic">No procedures extracted</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Documentation & Risks */}
+            <div className="grid md:grid-cols-2 gap-6">
+                {/* Risk Flags */}
+                <div className="card">
+                    <div className="card-header">
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle className="w-5 h-5 text-amber-600" />
+                            <h3 className="section-title">Risk Flags</h3>
+                        </div>
+                    </div>
+                    <div className="card-body">
+                        {insurance_justification.risk_flags.length > 0 ? (
+                            <div className="space-y-3">
+                                {insurance_justification.risk_flags.map((flag, i) => (
+                                    <div key={i} className="alert alert-warning py-3">
+                                        <div className="flex items-start gap-2">
+                                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                            <span className="text-sm">{flag}</span>
                                         </div>
-                                    ))}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="alert alert-success">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span className="text-sm">No risk flags detected</span>
                                 </div>
                             </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Required Documents */}
+                <div className="card">
+                    <div className="card-header">
+                        <div className="flex items-center gap-3">
+                            <ClipboardCheck className="w-5 h-5 text-blue-800" />
+                            <h3 className="section-title">Required Documents</h3>
                         </div>
+                    </div>
+                    <div className="card-body">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Document Required</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {insurance_justification.required_documents.map((doc, i) => (
+                                    <tr key={i}>
+                                        <td className="text-gray-500">{i + 1}</td>
+                                        <td>{doc}</td>
+                                        <td>
+                                            <span className="badge badge-warning text-xs">Pending</span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
             {/* Action Footer */}
-            <div className="glass-card rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
-                        <Info className="w-5 h-5 text-primary-600" />
+            <div className="card">
+                <div className="card-body">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-blue-800 mt-0.5" />
+                            <p className="text-sm text-gray-600">
+                                Please verify the extracted information and ensure all required documents
+                                are attached before submitting to the insurance provider.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button className="btn btn-secondary">
+                                <Printer className="w-4 h-4" />
+                                Print Report
+                            </button>
+                            <button className="btn btn-secondary">
+                                <Download className="w-4 h-4" />
+                                Export PDF
+                            </button>
+                            <button className="btn btn-primary">
+                                Submit to Insurance
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
-                    <p className="text-sm text-gray-600">
-                        Review the extracted information and ensure all required documents are attached before submission.
-                    </p>
-                </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-                    <button className="btn-secondary flex items-center justify-center gap-2 px-5 py-3">
-                        <FileText className="w-4 h-4" />
-                        Generate Report
-                    </button>
-                    <button className="btn-primary flex items-center justify-center gap-2 px-5 py-3">
-                        Submit to Insurance
-                        <ExternalLink className="w-4 h-4" />
-                    </button>
                 </div>
             </div>
         </div>
