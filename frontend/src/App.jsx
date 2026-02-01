@@ -18,17 +18,15 @@ function App() {
     return (
         <div className="min-h-screen mesh-bg relative overflow-hidden">
 
-            {/* Animated Background Orbs with Enhanced Physics */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="orb orb-blue w-[700px] h-[700px] -top-[250px] -right-[250px] animate-float" />
-                <div className="orb orb-purple w-[600px] h-[600px] top-[35%] -left-[200px] animate-float-slow" />
-                <div className="orb orb-teal w-[500px] h-[500px] bottom-[15%] right-[15%] animate-float-delayed" />
-                <div className="orb orb-blue w-[350px] h-[350px] bottom-[10%] left-[25%] opacity-40 animate-float" />
-                <div className="orb orb-purple w-[250px] h-[250px] top-[60%] right-[40%] opacity-25 animate-float-slow" />
+            {/* Animated Background Orbs - Subtle decoration */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+                <div className="orb orb-blue w-[500px] h-[500px] -top-[200px] -right-[200px] animate-float" />
+                <div className="orb orb-purple w-[400px] h-[400px] top-[40%] -left-[150px] animate-float-slow" />
+                <div className="orb orb-teal w-[350px] h-[350px] bottom-[20%] right-[10%] animate-float-delayed" />
             </div>
 
             {/* Enhanced Grid Pattern Overlay */}
-            <div className="fixed inset-0 grid-pattern pointer-events-none" />
+            <div className="fixed inset-0 grid-pattern pointer-events-none z-0" />
 
             {/* Premium Header */}
             <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled
@@ -82,11 +80,11 @@ function App() {
             </header>
 
             {/* Main Content */}
-            <main className="relative z-10 pt-28 pb-20">
+            <main className="relative z-10 pt-32 pb-24">
                 {!result ? (
                     <div className="animate-fade-in">
                         {/* Hero Section */}
-                        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 lg:py-20">
+                        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-24">
                             <div className="text-center max-w-4xl mx-auto space-y-8">
                                 {/* Top Badge */}
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-white/50 shadow-sm animate-fade-in-down">
@@ -146,12 +144,12 @@ function App() {
                         </section>
 
                         {/* Upload Section */}
-                        <section className="max-w-5xl mx-auto px-6 lg:px-8 pb-16">
+                        <section className="max-w-5xl mx-auto px-6 lg:px-8 py-12">
                             <UploadZone onAnalysisComplete={setResult} />
                         </section>
 
                         {/* Features Section */}
-                        <section id="features" className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+                        <section id="features" className="max-w-7xl mx-auto px-6 lg:px-8 py-24 mt-8">
                             <div className="text-center mb-16">
                                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                                     Why Choose <span className="gradient-text-static">MediClaim AI</span>?
@@ -231,7 +229,7 @@ function App() {
                         </section>
 
                         {/* Trust Banner - Enhanced */}
-                        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+                        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 mt-8">
                             <div className="glass-card-dark rounded-3xl p-12 relative overflow-hidden group hover:shadow-glass-xl transition-all duration-500">
                                 <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 via-ai-600/20 to-accent-600/20 animate-gradient-x" />
                                 <div className="absolute top-0 right-0 w-96 h-96 bg-ai-500/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
