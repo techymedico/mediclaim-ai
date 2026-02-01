@@ -66,7 +66,7 @@ export default function AnalysisResult({ data }) {
                                     <tr>
                                         <td className="font-medium text-gray-700">Package Code</td>
                                         <td>
-                                            <code className="bg-gray-100 px-2 py-1 rounded text-blue-800 font-mono text-sm">
+                                            <code className="bg-gray-100 px-3 py-1.5 rounded text-blue-800 font-mono text-sm inline-block break-all">
                                                 {primary.package_code}
                                             </code>
                                         </td>
