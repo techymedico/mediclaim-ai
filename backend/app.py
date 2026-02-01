@@ -11,7 +11,23 @@ load_dotenv()
 app = FastAPI(title="Medical Insurance Intelligence API")
 
 # Production-ready CORS configuration
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+# Default includes common origins - add more via ALLOWED_ORIGINS env var
+default_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://mediclaim-ai-one.vercel.app",
+    "https://mediclaim-ai.vercel.app",
+]
+
+# Add any additional origins from environment
+env_origins = os.getenv("ALLOWED_ORIGINS", "")
+if env_origins:
+    default_origins.extend([o.strip() for o in env_origins.split(",") if o.strip()])
+
+# Remove duplicates
+allowed_origins = list(set(default_origins))
+
+print(f"CORS allowed origins: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
