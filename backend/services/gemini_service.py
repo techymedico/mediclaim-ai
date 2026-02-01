@@ -84,7 +84,7 @@ class GeminiService:
             # Cleanup markdown code blocks if present
             text = response.text.replace('```json', '').replace('```', '').strip()
             data = json.loads(text)
-            return AnalysisResponse(**data)
+            return data
         except Exception as e:
             print(f"Error parsing Gemini response: {e}")
             if 'response' in locals():
