@@ -119,6 +119,40 @@ class GeminiService:
             # Cleanup markdown code blocks if present
             text = response.text.replace('```json', '').replace('```', '').strip()
             data = json.loads(text)
+            
+            # VALIDATION: Filter to only packages from candidates list
+            valid_codes = {c.get("PACKAGE CODE") for c in candidates if c.get("PACKAGE CODE")}
+            valid_codes_lookup = {c.get("PACKAGE CODE"): c for c in candidates if c.get("PACKAGE CODE")}
+            
+            # Validate primary package
+            primary = data.get("package_recommendation", {}).get("primary_package", {})
+            primary_code = primary.get("package_code", "")
+            if primary_code and primary_code not in valid_codes and primary_code != "NO_MATCH":
+                # Try to find closest match or mark as invalid
+                data["package_recommendation"]["primary_package"] = {
+                    "package_code": "NO_MATCH",
+                    "package_name": "No matching package found in database",
+                    "reason": f"AI suggested '{primary_code}' but it's not in the approved package list"
+                }
+            elif primary_code in valid_codes:
+                # Use exact name from candidates
+                candidate = valid_codes_lookup.get(primary_code)
+                if candidate:
+                    data["package_recommendation"]["primary_package"]["package_name"] = candidate.get("PACKAGE NAME", primary.get("package_name", ""))
+            
+            # Validate add-on packages - only keep those in candidates list
+            add_ons = data.get("package_recommendation", {}).get("add_on_packages", [])
+            validated_add_ons = []
+            for pkg in add_ons:
+                pkg_code = pkg.get("package_code", "")
+                if pkg_code and pkg_code in valid_codes:
+                    # Use exact name from candidates
+                    candidate = valid_codes_lookup.get(pkg_code)
+                    if candidate:
+                        pkg["package_name"] = candidate.get("PACKAGE NAME", pkg.get("package_name", ""))
+                    validated_add_ons.append(pkg)
+            data["package_recommendation"]["add_on_packages"] = validated_add_ons
+            
             return data
         except Exception as e:
             print(f"Error parsing Gemini response: {e}")
