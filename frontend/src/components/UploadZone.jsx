@@ -86,7 +86,7 @@ export default function UploadZone({ onAnalysisComplete }) {
     ];
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto relative z-10">
             <div
                 className={twMerge(
                     "relative group cursor-pointer transition-all duration-700 ease-out",

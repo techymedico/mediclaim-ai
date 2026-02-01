@@ -61,23 +61,23 @@ export default function AnalysisResult({ data }) {
     const confidenceStyle = getConfidenceColor(confidence);
 
     return (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-8 animate-fade-in relative z-10">
 
             {/* Success Banner */}
-            <div className="glass-card rounded-2xl p-4 border-l-4 border-emerald-500 flex items-center gap-4 animate-slide-in-right">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                    <CheckCircle className="w-6 h-6 text-white" />
+            <div className="glass-card rounded-2xl p-5 border-l-4 border-emerald-500 flex flex-col sm:flex-row items-start sm:items-center gap-4 animate-slide-in-right shadow-lg">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 flex-shrink-0">
+                    <CheckCircle className="w-7 h-7 text-white" />
                 </div>
                 <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">Analysis Complete</h3>
-                    <p className="text-sm text-gray-500">AI has successfully analyzed your discharge summary and matched it with insurance protocols.</p>
+                    <h3 className="font-bold text-lg text-gray-900">Analysis Complete</h3>
+                    <p className="text-sm text-gray-500 mt-1">AI has successfully analyzed your discharge summary and matched it with insurance protocols.</p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button className="glass-button px-4 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-primary-600 flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button className="flex-1 sm:flex-none glass-button px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:text-primary-600 hover:bg-primary-50 flex items-center justify-center gap-2 transition-all">
                         <Download className="w-4 h-4" />
                         Export
                     </button>
-                    <button className="glass-button px-4 py-2 rounded-xl text-sm font-medium text-gray-600 hover:text-primary-600 flex items-center gap-2">
+                    <button className="flex-1 sm:flex-none glass-button px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:text-primary-600 hover:bg-primary-50 flex items-center justify-center gap-2 transition-all">
                         <Share2 className="w-4 h-4" />
                         Share
                     </button>
@@ -90,7 +90,7 @@ export default function AnalysisResult({ data }) {
                 <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-100/60 to-ai-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:translate-x-1/4 transition-transform duration-700" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-accent-100/50 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
 
-                <div className="relative p-8 md:p-10">
+                <div className="relative p-6 sm:p-8 md:p-10">
                     <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
 
                         {/* Left Side - Package Details */}
@@ -152,8 +152,8 @@ export default function AnalysisResult({ data }) {
                         </div>
 
                         {/* Right Side - Confidence Meter */}
-                        <div className="lg:w-72 flex flex-col items-center justify-center">
-                            <div className="glass-card rounded-3xl p-8 w-full text-center space-y-4 border border-white/60">
+                        <div className="lg:w-80 flex flex-col items-center justify-center mt-6 lg:mt-0">
+                            <div className="glass-card rounded-3xl p-6 sm:p-8 w-full text-center space-y-5 border border-white/60 shadow-xl">
                                 <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Confidence Score</span>
 
                                 {/* Animated Circle */}
@@ -198,7 +198,7 @@ export default function AnalysisResult({ data }) {
             </div>
 
             {/* Detail Cards Grid */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
 
                 {/* Clinical Extraction Card */}
                 <div className="glass-card rounded-2xl overflow-hidden">
@@ -375,7 +375,7 @@ export default function AnalysisResult({ data }) {
             </div>
 
             {/* Action Footer */}
-            <div className="glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="glass-card rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
                         <Info className="w-5 h-5 text-primary-600" />
@@ -384,12 +384,12 @@ export default function AnalysisResult({ data }) {
                         Review the extracted information and ensure all required documents are attached before submission.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="btn-secondary flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                    <button className="btn-secondary flex items-center justify-center gap-2 px-5 py-3">
                         <FileText className="w-4 h-4" />
                         Generate Report
                     </button>
-                    <button className="btn-primary flex items-center gap-2">
+                    <button className="btn-primary flex items-center justify-center gap-2 px-5 py-3">
                         Submit to Insurance
                         <ExternalLink className="w-4 h-4" />
                     </button>
